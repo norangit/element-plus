@@ -13,6 +13,7 @@
     </template>
   </el-table-v2>
 </template>
+
 <script lang="tsx" setup>
 import { TableV2FixedDir, TableV2Placeholder } from 'element-plus'
 
@@ -83,6 +84,7 @@ const CustomizedHeader: FunctionalComponent<
         groupCells.push(
           <div
             class="flex items-center justify-center custom-header-cell"
+            role="columnheader"
             style={{
               ...cells[columnIndex].props!.style,
               width: `${width}px`,
