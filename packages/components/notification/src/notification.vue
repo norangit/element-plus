@@ -37,13 +37,14 @@
     </div>
   </transition>
 </template>
+
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
 import { useEventListener, useTimeoutFn } from '@vueuse/core'
 import { CloseComponents, TypeComponentsMap } from '@element-plus/utils'
 import { EVENT_CODE } from '@element-plus/constants'
 import { ElIcon } from '@element-plus/components/icon'
-import { useNamespace } from '@element-plus/hooks'
+import { useGlobalComponentSettings } from '@element-plus/components/config-provider'
 import { notificationEmits, notificationProps } from './notification'
 
 import type { CSSProperties } from 'vue'
@@ -55,7 +56,9 @@ defineOptions({
 const props = defineProps(notificationProps)
 defineEmits(notificationEmits)
 
-const ns = useNamespace('notification')
+const { ns, zIndex } = useGlobalComponentSettings('notification')
+const { nextZIndex, currentZIndex } = zIndex
+
 const { Close } = CloseComponents
 
 const visible = ref(false)
@@ -82,7 +85,7 @@ const verticalProperty = computed(() =>
 const positionStyle = computed<CSSProperties>(() => {
   return {
     [verticalProperty.value]: `${props.offset}px`,
-    zIndex: props.zIndex,
+    zIndex: props.zIndex ?? currentZIndex.value,
   }
 })
 
@@ -118,6 +121,7 @@ function onKeydown({ code }: KeyboardEvent) {
 // lifecycle
 onMounted(() => {
   startTimer()
+  nextZIndex()
   visible.value = true
 })
 
