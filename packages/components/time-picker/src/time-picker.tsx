@@ -1,6 +1,7 @@
 import { defineComponent, provide, ref } from 'vue'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+import { UPDATE_MODEL_EVENT } from '@element-plus/constants'
 import { DEFAULT_FORMATS_TIME } from './constants'
 import Picker from './common/picker.vue'
 import TimePickPanel from './time-picker-com/panel-time-pick.vue'
@@ -13,41 +14,44 @@ export default defineComponent({
   install: null,
   props: {
     ...timePickerDefaultProps,
+    /**
+     * @description whether to pick a time range
+     */
     isRange: {
       type: Boolean,
       default: false,
     },
   },
-  emits: ['update:modelValue'],
+  emits: [UPDATE_MODEL_EVENT],
   setup(props, ctx) {
     const commonPicker = ref<InstanceType<typeof Picker>>()
     const [type, Panel] = props.isRange
       ? ['timerange', TimeRangePanel]
       : ['time', TimePickPanel]
 
-    const modelUpdater = (value: any) => ctx.emit('update:modelValue', value)
+    const modelUpdater = (value: any) => ctx.emit(UPDATE_MODEL_EVENT, value)
     provide('ElPopperOptions', props.popperOptions)
     ctx.expose({
       /**
-       * @description focus on the input element
+       * @description focus the Input component
        */
-      focus: (e: FocusEvent | undefined) => {
-        commonPicker.value?.handleFocusInput(e)
+      focus: () => {
+        commonPicker.value?.focus()
       },
       /**
-       * @description blur from the input element
+       * @description blur the Input component
        */
-      blur: (e: FocusEvent | undefined) => {
-        commonPicker.value?.handleBlurInput(e)
+      blur: () => {
+        commonPicker.value?.blur()
       },
       /**
-       * @description opens the picker element
+       * @description open the TimePicker popper
        */
       handleOpen: () => {
         commonPicker.value?.handleOpen()
       },
       /**
-       * @description closes the picker element
+       * @description close the TimePicker popper
        */
       handleClose: () => {
         commonPicker.value?.handleClose()

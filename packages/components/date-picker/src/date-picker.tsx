@@ -9,16 +9,19 @@ import dayOfYear from 'dayjs/plugin/dayOfYear.js'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter.js'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore.js'
 import { useNamespace } from '@element-plus/hooks'
-import { ROOT_PICKER_INJECTION_KEY } from '@element-plus/tokens'
 import {
   CommonPicker,
   DEFAULT_FORMATS_DATE,
   DEFAULT_FORMATS_DATEPICKER,
-  timePickerDefaultProps,
+  type DateModelType,
+  type SingleOrRange,
 } from '@element-plus/components/time-picker'
+import { UPDATE_MODEL_EVENT } from '@element-plus/constants'
+import { ROOT_PICKER_INJECTION_KEY } from './constants'
 
 import { datePickerProps } from './props/date-picker'
 import { getPanel } from './panel-utils'
+import type { DatePickerExpose } from './instance'
 
 dayjs.extend(localeData)
 dayjs.extend(advancedFormat)
@@ -32,12 +35,8 @@ dayjs.extend(isSameOrBefore)
 export default defineComponent({
   name: 'ElDatePicker',
   install: null,
-  props: {
-    // FIXME: move this to date-picker.ts
-    ...timePickerDefaultProps,
-    ...datePickerProps,
-  },
-  emits: ['update:modelValue'],
+  props: datePickerProps,
+  emits: [UPDATE_MODEL_EVENT],
   setup(props, { expose, emit, slots }) {
     const ns = useNamespace('picker-panel')
 
@@ -48,9 +47,12 @@ export default defineComponent({
     })
 
     const commonPicker = ref<InstanceType<typeof CommonPicker>>()
-    const refProps = {
-      focus: (focusStartInput = true) => {
-        commonPicker.value?.focus(focusStartInput)
+    const refProps: DatePickerExpose = {
+      focus: () => {
+        commonPicker.value?.focus()
+      },
+      blur: () => {
+        commonPicker.value?.blur()
       },
       handleOpen: () => {
         commonPicker.value?.handleOpen()
@@ -62,8 +64,8 @@ export default defineComponent({
 
     expose(refProps)
 
-    const onModelValueUpdated = (val: any) => {
-      emit('update:modelValue', val)
+    const onModelValueUpdated = (val: SingleOrRange<DateModelType> | null) => {
+      emit(UPDATE_MODEL_EVENT, val)
     }
 
     return () => {
@@ -85,7 +87,14 @@ export default defineComponent({
         >
           {{
             default: (scopedProps: /**FIXME: remove any type */ any) => (
-              <Component {...scopedProps} />
+              <Component {...scopedProps}>
+                {{
+                  'prev-month': slots['prev-month'],
+                  'next-month': slots['next-month'],
+                  'prev-year': slots['prev-year'],
+                  'next-year': slots['next-year'],
+                }}
+              </Component>
             ),
             'range-separator': slots['range-separator'],
           }}
